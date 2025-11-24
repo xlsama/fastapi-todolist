@@ -3,5 +3,18 @@ name = "fastapi-todolist"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = ["fastapi[standard]>=0.121.2"]
+requires-python = ">=3.14"
+dependencies = [
+  "fastapi[standard]>=0.121.2",
+  "sqlalchemy>=2.0.44",
+  "psycopg2-binary>=2.9.9",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.14.5"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "single"
