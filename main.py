@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 from database import Base, Todo, engine, get_db
@@ -8,6 +8,9 @@ from database import Base, Todo, engine, get_db
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Create API router with /api prefix
+router = APIRouter(prefix='/api')
 
 
 # Pydantic model for Todo response
@@ -42,18 +45,18 @@ def get_todo_by_id(todo_id: int, db: Session) -> Todo:
     return todo
 
 
-@app.get('/')
+@router.get('/')
 async def root():
     return {'message': 'FastAPI TodoList API'}
 
 
-@app.get('/todos')
+@router.get('/todos')
 async def get_todos(db: Session = Depends(get_db)) -> list[TodoModel]:
     todos = db.query(Todo).all()
     return [TodoModel.model_validate(todo) for todo in todos]
 
 
-@app.post('/todos', status_code=status.HTTP_201_CREATED)
+@router.post('/todos', status_code=status.HTTP_201_CREATED)
 async def create_todo(todo: TodoCreateModel, db: Session = Depends(get_db)) -> TodoModel:
     try:
         new_todo = Todo(title=todo.title, description=todo.description)
@@ -66,13 +69,13 @@ async def create_todo(todo: TodoCreateModel, db: Session = Depends(get_db)) -> T
         raise HTTPException(status_code=500, detail=f'Failed to create todo: {str(e)}')
 
 
-@app.get('/todos/{todo_id}')
+@router.get('/todos/{todo_id}')
 async def get_todo(todo_id: int, db: Session = Depends(get_db)) -> TodoModel:
     existing_todo = get_todo_by_id(todo_id, db)
     return TodoModel.model_validate(existing_todo)
 
 
-@app.put('/todos/{todo_id}')
+@router.put('/todos/{todo_id}')
 async def update_todo(
     todo_id: int, todo: TodoUpdateModel, db: Session = Depends(get_db)
 ) -> TodoModel:
@@ -90,7 +93,7 @@ async def update_todo(
         raise HTTPException(status_code=500, detail=f'Failed to update todo: {str(e)}')
 
 
-@app.delete('/todos/{todo_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/todos/{todo_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     existing_todo = get_todo_by_id(todo_id, db)
 
@@ -100,3 +103,6 @@ async def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f'Failed to delete todo: {str(e)}')
+
+
+app.include_router(router)
