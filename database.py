@@ -6,6 +6,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 # PostgreSQL connection URL format: postgresql+psycopg2://user:password@host:port/dbname
 DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql+psycopg2://xlsama@localhost:5432/todolist')
 
+
 # Create SQLAlchemy engine
 engine = create_engine(
     DATABASE_URL,
@@ -13,8 +14,9 @@ engine = create_engine(
     pool_size=5,
     max_overflow=10,
     pool_pre_ping=True,  # 自动检测连接是否有效
-    echo=True,  # 开发时可以设为 True 查看 SQL 语句
+    echo=False,  # 开发时可以设为 True 查看 SQL 语句
 )
+
 
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
