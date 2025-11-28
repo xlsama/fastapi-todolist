@@ -50,35 +50,33 @@ async def root():
     return {'message': 'FastAPI TodoList API'}
 
 
-@router.get('/todos')
-async def get_todos(db: Session = Depends(get_db)) -> list[TodoModel]:
+@router.get('/todos', response_model=list[TodoModel])
+async def get_todos(db: Session = Depends(get_db)):
     todos = db.query(Todo).all()
-    return [TodoModel.model_validate(todo) for todo in todos]
+    return todos
 
 
-@router.post('/todos', status_code=status.HTTP_201_CREATED)
-async def create_todo(todo: TodoCreateModel, db: Session = Depends(get_db)) -> TodoModel:
+@router.post('/todos', status_code=status.HTTP_201_CREATED, response_model=TodoModel)
+async def create_todo(todo: TodoCreateModel, db: Session = Depends(get_db)):
     try:
         new_todo = Todo(title=todo.title, description=todo.description)
         db.add(new_todo)
         db.commit()
         db.refresh(new_todo)  # Refresh to get database-generated fields (id, timestamps)
-        return TodoModel.model_validate(new_todo)
+        return new_todo
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f'Failed to create todo: {str(e)}')
 
 
-@router.get('/todos/{todo_id}')
-async def get_todo(todo_id: int, db: Session = Depends(get_db)) -> TodoModel:
+@router.get('/todos/{todo_id}', response_model=TodoModel)
+async def get_todo(todo_id: int, db: Session = Depends(get_db)):
     existing_todo = get_todo_by_id(todo_id, db)
-    return TodoModel.model_validate(existing_todo)
+    return existing_todo
 
 
-@router.put('/todos/{todo_id}')
-async def update_todo(
-    todo_id: int, todo: TodoUpdateModel, db: Session = Depends(get_db)
-) -> TodoModel:
+@router.put('/todos/{todo_id}', response_model=TodoModel)
+async def update_todo(todo_id: int, todo: TodoUpdateModel, db: Session = Depends(get_db)):
     existing_todo = get_todo_by_id(todo_id, db)
 
     try:
@@ -87,7 +85,7 @@ async def update_todo(
 
         db.commit()
         db.refresh(existing_todo)
-        return TodoModel.model_validate(existing_todo)
+        return existing_todo
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f'Failed to update todo: {str(e)}')
@@ -100,6 +98,7 @@ async def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     try:
         db.delete(existing_todo)
         db.commit()
+        return {'ok': True}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f'Failed to delete todo: {str(e)}')
