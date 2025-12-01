@@ -106,6 +106,4 @@ async def delete_todo(todo_id: int, session: SessionDep):
     return {'ok': True}
 
 
-app.include_router(
-    router,
-)
+app.include_router(router)
