@@ -9,6 +9,7 @@ from sqlmodel import Field, SQLModel, Session, create_engine, select
 # PostgreSQL connection URL format: postgresql+psycopg2://user:password@host:port/dbname
 database_url = os.getenv('DATABASE_URL', 'postgresql+psycopg2://xlsama@localhost:5432/todolist')
 
+
 engine = create_engine(database_url)
 
 
@@ -105,4 +106,6 @@ async def delete_todo(todo_id: int, session: SessionDep):
     return {'ok': True}
 
 
-app.include_router(router)
+app.include_router(
+    router,
+)
