@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from datetime import datetime
 import os
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
 from sqlmodel import Field, SQLModel, Session, create_engine, select
 
@@ -68,9 +68,12 @@ async def create_todo(todo: TodoCreate, session: SessionDep):
 
 @router.get('/todos', response_model=list[Todo])
 async def get_todos(
-    session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100
+    session: SessionDep, offset: int = 0, limit: Annotated[Optional[int], Query(le=100)] = None
 ):
-    todos = session.exec(select(Todo).offset(offset).limit(limit)).all()
+    query = select(Todo).offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
+    todos = session.exec(query).all()
     return todos
 
 
