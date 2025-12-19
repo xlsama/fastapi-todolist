@@ -1,10 +1,10 @@
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
-import os
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
-from sqlmodel import Field, SQLModel, Session, create_engine, select
 
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 # PostgreSQL connection URL format: postgresql+psycopg2://user:password@host:port/dbname
 database_url = os.getenv('DATABASE_URL', 'postgresql+psycopg2://xlsama@localhost:5432/todolist')
